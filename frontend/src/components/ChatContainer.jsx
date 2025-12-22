@@ -31,7 +31,7 @@ function ChatContainer() {
         }
     }
 
-    const handleSendImage = async () => {
+    const handleSendImage = async (e) => {
         try {
             const file = e.target.files[0];
 
@@ -47,7 +47,7 @@ function ChatContainer() {
                 e.target.value = '';
             }
 
-            reader.readAdDataURL(file);
+            reader.readAsDataURL(file);
         } catch (err) {
             console.error(err);
             toast.error(err.message);

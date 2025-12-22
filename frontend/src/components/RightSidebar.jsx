@@ -35,6 +35,12 @@ function RightSidebar() {
                     ))}
                 </div>
             </div>
+            <div>
+                {/*adding the buttons for webrtc calling*/}
+                <div className='px-5 mt-5 flex flex-col gap-3'>
+                    <button className=''></button>
+                </div>
+            </div>
             <button onClick={() => logout()} className='absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-linear-to-r from-white to-gray-600 text-whiteborder-none text-sm font-light py-2 px-20 rounded-full cursor-pointer'>
                 Logout
             </button>

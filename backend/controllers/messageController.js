@@ -40,9 +40,9 @@ const getMessages = async (req, res) => {
             ]
         });
 
-        await Message.updatemant({ senderId: selectedUserId, receiverId: myId }, { seen: true });
+        await Message.updateMany({ senderId: selectedUserId, receiverId: myId }, { seen: true });
 
-        res.status(200).json({ sccess: true, messages });
+        res.status(200).json({ success: true, messages });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: err.message });
@@ -55,7 +55,7 @@ const markMessageAsSeen = async (req, res) => {
 
         await Message.findByIdAndUpdate(id, { seen: true });
 
-        res.status(200).json({ sucess: true });
+        res.status(200).json({ success: true });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: err.message });
@@ -90,7 +90,7 @@ const sendMessage = async (req, res) => {
             io.to(receiverSocketId).emit('newMessage', newMessage);
         }
 
-        res.status(200).json({ sussess: true, newMessage });
+        res.status(200).json({ success: true, newMessage });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: err.message });
