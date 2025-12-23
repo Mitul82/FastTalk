@@ -3,10 +3,12 @@ import React from 'react';
 import assets from '../assets/assets.js';
 import { AuthContext } from '../../context/authContext.jsx';
 import { ChatContext } from '../../context/chatContext.jsx';
+import { CallContext } from '../../context/callContext.jsx';
 
 function RightSidebar() {
     const { selectedUser, messages } = React.useContext(ChatContext);
     const { logout, onlineUsers } = React.useContext(AuthContext);
+    const { voiceCallUser, videoCallUser } = React.useContext(CallContext);
 
     const [msgImages, setmsgImages] = React.useState([]);
 
@@ -35,11 +37,13 @@ function RightSidebar() {
                     ))}
                 </div>
             </div>
-            <div>
-                {/*adding the buttons for webrtc calling*/}
-                <div className='px-5 mt-5 flex flex-col gap-3'>
-                    <button className=''></button>
-                </div>
+            <div className='absolute bottom-20 w-full flex justify-space-around gap-10'>
+                <button onClick={() => voiceCallUser()} className='relative left-1/4 transform -translate-x-1/2 bg-linear-to-r from-white to-gray-600 text-whiteborder-none text-sm font-light py-2 px-3.5 rounded-full cursor-pointer'>
+                    Voice Call
+                </button>
+                <button onClick={() => videoCallUser()} className='relative left-1/4 transform -translate-x-1/2 bg-linear-to-r from-white to-gray-600 text-whiteborder-none text-sm font-light py-2 px-3.5 rounded-full cursor-pointer'>
+                    Video Call
+                </button>
             </div>
             <button onClick={() => logout()} className='absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-linear-to-r from-white to-gray-600 text-whiteborder-none text-sm font-light py-2 px-20 rounded-full cursor-pointer'>
                 Logout

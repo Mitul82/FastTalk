@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { AuthProvider } from '../context/authContext.jsx';
 import { ChatProvider } from '../context/chatContext.jsx';
+import { CallProvider } from '../context/callContext.jsx';
 
 const root = ReactDom.createRoot(document.getElementById('root'));
 
@@ -13,7 +14,9 @@ function Page() {
         <BrowserRouter>
             <AuthProvider>
                 <ChatProvider>
-                    <App/>
+                    <CallProvider>
+                        <App/>
+                    </CallProvider>
                 </ChatProvider>
             </AuthProvider>
         </BrowserRouter>
