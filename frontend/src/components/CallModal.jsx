@@ -1,6 +1,6 @@
 import React from 'react';
 
-function CallModal({ isOpen, onClose, onCall }) {
+function CallModal() {
     
 }
 
