@@ -2,26 +2,10 @@ import React from 'react';
 import { CallContext } from '../../context/callContext.jsx';
 
 function CallModal() {
-    const {
-        incomingCall,
-        callState,
-        localStream,
-        remoteStream,
-        acceptCall,
-        rejectCall,
-        endCall,
-        toggleMute,
-        toggleCamera,
-        toggleScreenShare,
-        isMuted,
-        isCameraOn,
-        isScreenSharing,
-        remoteScreenSharing
-    } = React.useContext(CallContext);
+    const { incomingCall, callState, localStream, remoteStream, acceptCall, rejectCall, endCall, toggleMute, toggleCamera, toggleScreenShare, isMuted, isCameraOn, isScreenSharing, remoteScreenSharing } = React.useContext(CallContext);
 
     if(!incomingCall && callState === 'idle') return null;
 
-    // Fullscreen layout for in-call
     if(callState === 'in-call') {
         const remoteAudioRef = React.createRef();
 
@@ -29,9 +13,10 @@ function CallModal() {
             if(remoteAudioRef.current && remoteStream) {
                 try {
                     remoteAudioRef.current.srcObject = remoteStream;
+
                     const p = remoteAudioRef.current.play();
+
                     if(p && p.catch) p.catch(() => {
-                        // autoplay blocked; will play when user interacts with the page (e.g., pressing any control)
                         console.warn('Autoplay prevented');
                     });
                 } catch (err) {
@@ -43,23 +28,19 @@ function CallModal() {
         return (
             <div className='fixed inset-0 z-50 bg-black flex items-center justify-center'>
                 <div className='w-full h-full relative'>
-                    {/* Remote stream full */}
+
                     <video autoPlay playsInline ref={(el) => { if(el && remoteStream) el.srcObject = remoteStream; }} className='w-full h-full object-cover bg-black' />
 
-                    {/* Hidden audio element to ensure audio always plays for voice calls */}
                     <audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
 
-                    {/* Small local preview */}
                     <div className='absolute right-6 bottom-24 w-40 h-28 bg-black rounded overflow-hidden border border-white/20'>
                         <video autoPlay muted playsInline ref={(el) => { if(el && localStream) el.srcObject = localStream; }} className='w-full h-full object-cover' />
                     </div>
 
-                    {/* remote screen sharing badge */}
                     { remoteScreenSharing && (
                         <div className='absolute left-6 top-6 bg-white/10 text-white px-3 py-1 rounded'>Remote sharing</div>
                     ) }
 
-                    {/* Controls */}
                     <div className='absolute left-0 right-0 bottom-6 flex justify-center gap-4'>
                         <button onClick={() => { toggleMute(); remoteAudioRef.current && remoteAudioRef.current.play().catch(()=>{}); }} className='bg-white/10 text-white px-4 py-2 rounded'>
                             { isMuted ? 'Unmute' : 'Mute' }
