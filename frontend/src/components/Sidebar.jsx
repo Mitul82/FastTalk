@@ -7,7 +7,7 @@ import { ChatContext } from '../../context/chatContext.jsx';
 
 function Sidebar() {
     const { getUsers, users, selectedUser, setSelectedUser, unseenMessages, setUnseenMessages } = React.useContext(ChatContext);
-    const { logout, onlineUsers } = React.useContext(AuthContext);
+    const { logout, onlineUser } = React.useContext(AuthContext);
 
     const [input, setInput] = React.useState(false);
 
@@ -17,7 +17,7 @@ function Sidebar() {
 
     React.useEffect(() => {
         getUsers();
-    }, [onlineUsers]);
+    }, [onlineUser]);
 
     return (
         <div className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${selectedUser ? 'max-md:hidden' : ''}`}>
@@ -47,7 +47,7 @@ function Sidebar() {
                         <div className='flex flex-col leading-5'>
                             <p>{user.fullName}</p>
                             {
-                                onlineUsers?.includes(user._id) ? <span className='text-green-400 text-xs'>Online</span> : <span className='text-neutral-400 text-xs'>Offline</span>
+                                onlineUser?.includes(user._id) ? <span className='text-green-400 text-xs'>Online</span> : <span className='text-neutral-400 text-xs'>Offline</span>
                             }
                         </div>
                         {unseenMessages[user._id] > 0 && <p className='absolute top-4 right-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-white text-black'>{unseenMessages[user._id]}</p>}

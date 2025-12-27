@@ -4,6 +4,7 @@ import { ChatContext } from '../../context/chatContext.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import ChatContainer from '../components/ChatContainer.jsx';
 import RightSidebar from '../components/RightSidebar.jsx';
+import CallModal from '../components/CallModal.jsx';
 
 function HomePage() {
     const { selectedUser } = React.useContext(ChatContext);
@@ -16,6 +17,7 @@ function HomePage() {
                 <ChatContainer/>
                 <RightSidebar/>
             </div>
+            <CallModal/>
         </div>
     );
 }
