@@ -10,8 +10,8 @@ export const CallProvider = ({ children }) => {
     const { socket, authUser } = React.useContext(AuthContext);
     const { selectedUser } = React.useContext(ChatContext);
 
-    const [call, setCall] = React.useState(null); // { callId, type, from, to }
-    const [callState, setCallState] = React.useState('idle'); // idle | ringing | connecting | in-call | ended
+    const [call, setCall] = React.useState(null);
+    const [callState, setCallState] = React.useState('idle');
     const [incomingCall, setIncomingCall] = React.useState(null);
 
     const [localStream, setLocalStream] = React.useState(null);
@@ -31,7 +31,6 @@ export const CallProvider = ({ children }) => {
         const pc = new RTCPeerConnection({
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' }
-                // Add TURN servers here via env if available
             ]
         });
 
@@ -147,7 +146,6 @@ export const CallProvider = ({ children }) => {
 
             console.log('acceptCall - local stream tracks:', stream.getAudioTracks(), stream.getVideoTracks());
 
-            // store camera track for future restore
             cameraTrackRef.current = stream.getVideoTracks()[0] || null;
             setIsCameraOn(!!cameraTrackRef.current);
 
@@ -155,10 +153,8 @@ export const CallProvider = ({ children }) => {
 
             const pc = createPeerConnection(incomingCall.callId);
 
-            // add local tracks
             stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
-            // notify caller that callee accepted (caller will create offer)
             socket.emit('acceptCall', { toUserId: incomingCall.from, fromUserId: incomingCall.to, callId: incomingCall.callId });
 
             setCallState('in-call');
@@ -194,12 +190,11 @@ export const CallProvider = ({ children }) => {
 
     const toggleCamera = async () => {
         if(!localStream) {
-            // try to get camera
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 cameraTrackRef.current = stream.getVideoTracks()[0];
                 setIsCameraOn(true);
-                // add to localStream and pc
+
                 setLocalStream(prev => {
                     const merged = new MediaStream([...(prev? prev.getTracks() : []), cameraTrackRef.current]);
                     if(pcRef.current) pcRef.current.addTrack(cameraTrackRef.current, merged);
@@ -225,7 +220,6 @@ export const CallProvider = ({ children }) => {
             const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             const screenTrack = displayStream.getVideoTracks()[0];
 
-            // store screen stream
             screenStreamRef.current = displayStream;
             setIsScreenSharing(true);
 
@@ -236,7 +230,6 @@ export const CallProvider = ({ children }) => {
                 pcRef.current.addTrack(screenTrack, displayStream);
             }
 
-            // Notify remote side optionally
             if(call) {
                 socket.emit('initiateScreenShare', { toUserId: call.to, fromUserId: call.from, callId: call.callId });
             }
@@ -258,13 +251,11 @@ export const CallProvider = ({ children }) => {
                 screenStreamRef.current = null;
             }
 
-            // restore camera track
             const sender = pcRef.current && pcRef.current.getSenders().find(s => s.track && s.track.kind === 'video');
             if(sender) {
                 if(cameraTrackRef.current) {
                     await sender.replaceTrack(cameraTrackRef.current);
                 } else {
-                    // if no camera track, remove sender track
                     try { await sender.replaceTrack(null); } catch(e){}
                 }
             }
@@ -287,7 +278,6 @@ export const CallProvider = ({ children }) => {
         }
     }
 
-    // Socket event handlers
     React.useEffect(() => {
         if(!socket) return;
 
@@ -302,7 +292,6 @@ export const CallProvider = ({ children }) => {
         }
 
         const onCallAccepted = (data) => {
-            // caller receives acceptance; begin SDP offer/answer flow
             setCallState('connecting');
 
             (async () => {
@@ -312,7 +301,6 @@ export const CallProvider = ({ children }) => {
 
                     console.log('onCallAccepted - local stream tracks:', stream.getAudioTracks(), stream.getVideoTracks());
 
-                    // store camera track for later
                     cameraTrackRef.current = stream.getVideoTracks()[0] || null;
                     setIsCameraOn(!!cameraTrackRef.current);
 
@@ -321,7 +309,6 @@ export const CallProvider = ({ children }) => {
                     const pc = createPeerConnection(call.callId);
                     stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
-                    // create offer and send to callee
                     const offer = await pc.createOffer();
                     await pc.setLocalDescription(offer);
 
@@ -337,8 +324,9 @@ export const CallProvider = ({ children }) => {
         const onReceiveOffer = async (data) => {
             try {
                 const { description, fromUserId, callId } = data;
-                // ensure we have local media and pc
+
                 const constraints = { audio: true, video: incomingCall?.type === 'video' };
+
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
                 console.log('onReceiveOffer - local stream tracks:', stream.getAudioTracks(), stream.getVideoTracks());
@@ -353,7 +341,6 @@ export const CallProvider = ({ children }) => {
 
                 await pc.setRemoteDescription(new RTCSessionDescription(description));
 
-                // add any pending candidates
                 pendingCandidatesRef.current.forEach(c => pc.addIceCandidate(c));
                 pendingCandidatesRef.current = [];
 
@@ -375,7 +362,6 @@ export const CallProvider = ({ children }) => {
                 if(pcRef.current) {
                     await pcRef.current.setRemoteDescription(new RTCSessionDescription(description));
 
-                    // add pending candidates
                     pendingCandidatesRef.current.forEach(c => pcRef.current.addIceCandidate(c));
                     pendingCandidatesRef.current = [];
 
