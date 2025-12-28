@@ -14,23 +14,25 @@ FastTalk is built as a scalable, real-time chat platform. Its primary technical 
   - others: Docker for creating easy to deploy docker containers
 
 # Installation:
-  Prerequisites:
+  - Prerequisites:
         - Node.js
         - NPM
         - Docker
-        
-  Local setup:
+
+  - Local setup:
     1. **Clone the Repository:**
           ```bash
           git clone https://github.com/Mitul82/FastTalk.git
           ```
+
     2. **Install Dependencies:**
          ```bash
          cd backend
          npm install
          cd frontend
          npm install
-         ```
+        ```
+         
     3. **Create a Docker compose file in the root of the project directory:**
         ```
         
@@ -110,7 +112,7 @@ FastTalk is built as a scalable, real-time chat platform. Its primary technical 
         driver: bridge    
     ```
 
-  4. **Ru  the command in CMD:**
+  4. **Run the command in CMD:**
      ```
      docker-compose up --build
      ```
@@ -131,3 +133,4 @@ Open a Pull Request
 
 # Connect with me at:
   [Linkedin](https://www.linkedin.com/in/mitul82/)
+
