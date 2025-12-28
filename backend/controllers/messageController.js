@@ -83,7 +83,6 @@ const sendMessage = async (req, res) => {
             image: imageUrl
         });
 
-        //emitting the new message to the receiver
         const receiverSocketId = userSocketMap[receiverId];
 
         if(receiverSocketId) {

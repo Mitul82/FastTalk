@@ -12,14 +12,13 @@ import msgRoutes from './routes/messagesRoutes.js';
 const app = express();
 const server = http.createServer(app);
 
-// creating the websockets server
 export const io = new Server(server, {
     cors: { origin: '*' }
 });
 
-export const userSocketMap = {};  //{ userId: socketId }
+export const userSocketMap = {};
 
-// defining the socket functionality and event handlers
+s
 io.on('connection', (socket) => {
     const userId = socket.handshake.query.userId;
 
@@ -60,7 +59,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('acceptCall', (data) => {
-        const { toUserId, fromUserId, callId } = data; // toUserId is caller's user id
+        const { toUserId, fromUserId, callId } = data;
         const callerSocketId = userSocketMap[toUserId];
         if(callerSocketId) {
             io.to(callerSocketId).emit('callAccepted', { fromUserId, callId, calleeSocketId: socket.id });
@@ -107,7 +106,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Notify remote that screen share stopped so UI can update
     socket.on('stopScreenShare', (data) => {
         const { toUserId, fromUserId, callId } = data;
         const recipientSocketId = userSocketMap[toUserId];
