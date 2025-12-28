@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (state, credentials) => {
         try {
             const { data } = await axios.post(`/api/auth/${state}`, credentials);
-
+            
             if(data.success) {
                 setAuthUser(data.userData);
                 
@@ -46,12 +46,16 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('token', data.token);
                 
                 toast.success(data.message);
+                
+                return true;
             } else {
                 toast.error(data.message);
+                return false;
             }
         } catch (err) {
             console.error(err);
             toast.error(err.message);
+            return false;
         }
     }
 

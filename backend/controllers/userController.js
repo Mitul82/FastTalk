@@ -42,9 +42,12 @@ const userLogin = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid credentials could not login' });
         }
 
+        const respUser = user.toObject();
+        delete respUser.password;
+
         const token = await user.createJWT();
 
-        res.status(200).json({ success: true, token, message: 'Login in successfull' });
+        res.status(200).json({ success: true, userData: respUser, token, message: 'Login in successfull' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: err.message })

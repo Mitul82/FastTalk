@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import assets from '../assets/assets';
 import { AuthContext } from '../../context/authContext';
@@ -11,9 +12,10 @@ function LoginPage() {
     const [bio, setBio] = React.useState('');
     const [isDataSubmitted, setIsDataSubmitted] = React.useState(false);
 
-    const { login } = React.useContext(AuthContext);
+    const { login, authUser } = React.useContext(AuthContext);
+    const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if(currState === 'signup' && !isDataSubmitted) {
@@ -21,7 +23,11 @@ function LoginPage() {
             return;
         }
 
-        login(currState === 'signup' ? 'signup' : 'login', { fullName, email, password, bio });
+        const success = await login(currState === 'signup' ? 'signup' : 'login', { fullName, email, password, bio });
+        
+        if(success) {
+            navigate('/');
+        }
     }
 
     return (
@@ -53,7 +59,7 @@ function LoginPage() {
                 <button type='submit' className='py-3 bg-linear-to-r from-gray-400 to-white text-black rounded-md cursor-pointer'>{currState === 'signup' ? 'Create Account' : 'Login Now'}</button>
 
                 <div className='flex items-center gap-2 text-sm text-gray-500'>
-                    <input type='checkbox'/>
+                    <input required type='checkbox'/>
                     <p>Agree to terms of use & privacy policy</p> 
                 </div>
 
