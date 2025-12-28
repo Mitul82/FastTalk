@@ -1,9 +1,12 @@
 import 'dotenv/config';
 
 import express from 'express';
-import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
+
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimiter from 'express-rate-limit';
 
 import connectDB from './database/connectDB.js';
 import userRoutes from './routes/userRoutes.js';
@@ -13,12 +16,14 @@ const app = express();
 const server = http.createServer(app);
 
 export const io = new Server(server, {
-    cors: { origin: '*' }
+    cors: { 
+        origin: process.env.FRONTEND_URL,
+        methods: ['GET', 'POST']
+    }
 });
 
 export const userSocketMap = {};
 
-s
 io.on('connection', (socket) => {
     const userId = socket.handshake.query.userId;
 
@@ -131,11 +136,41 @@ io.on('connection', (socket) => {
 });
 
 app.use(express.json({limit: '10mb'}));
-app.use(cors());
+
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
+
+app.use(rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP please try again after 15 minutes',
+    standardHeaders: true,
+    legacyHeaders: false
+}));
+
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            "default-src": ["'self'"],
+            "script-src": ["'self'"],
+            "style-src": ["'self'", "'unsafe-inline'"],
+            "connect-src": ["'self'", process.env.FRONTEND_URL],
+            "img-src": ["'self'", "data:", "https://res.cloudinary.com"],
+            "object-src": ["'none'"],
+            "base-uri": ["'self'"],
+            "frame-ancestors": ["'none'"],
+            "upgrade-insecure-requests": []
+        }
+    }
+}));
 
 app.use('/api/status', (req, res) => {
     res.send("server is live");
 });
+
 app.use('/api/auth', userRoutes);
 app.use('/api/messages', msgRoutes);
 
