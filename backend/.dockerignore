@@ -15,4 +15,3 @@ pnpm-debug.log*
 .dockerignore
 Dockerfile
 README.md
-docker-compose.yml

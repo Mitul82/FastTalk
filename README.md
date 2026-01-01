@@ -1,136 +1,60 @@
 # Fast-Talk
 
-FastTalk is built as a scalable, real-time chat platform. Its primary technical focus is on low latency and high concurrency, ensuring that messages and data are exchanged almost instantaneously even under heavy loads.
+Fast-Talk is a high-performance, real-time communication platform engineered for low-latency data exchange and high concurrency. It leverages modern web technologies to provide a seamless peer-to-peer experience within a fully containerized environment.
 
 # Key Features:
-  - webRTC for realtime peer to peer voice calling, video calling and screen sharing
-  - webSockets implemented with the help of socket.io to facilitate close to instantaneous messages
-  - Dockerized application with the data base located on the localhost to facilitate easy deployment
+  - WebRTC Integration: Peer-to-peer voice and video calling with low-latency screen sharing.
+  - Instant Messaging: Real-time chat powered by Socket.io for instantaneous message delivery.
+  - Secure Auth: Robust user authentication implemented via JWT (JSON Web Tokens).
+  - Full Containerization: Entire stack (Frontend, Backend, DB) is Dockerized for "one-command" deployment.
+  - Database Management: Includes Mongo-Express as a built-in GUI for real-time data monitoring.
 
 # Tech Stack:
-  - Frontend: React, TailwindCSS, React Router
-  - Backend: Node.js, Express.js
-  - Databases: MongoDB, cloudinary
-  - others: Docker for creating easy to deploy docker containers
+  -Frontend: React, TailwindCSS, Vite
+  -Backend: Node.js, Express.js
+  -Real-Time: WebRTC (P2P Video/Audio), Socket.io (WebSockets)
+  -Database: MongoDB (Data), Cloudinary (Media)
+  -DevOps: Docker, Docker Compose, Nginx
 
-# Installation:
+# System Architecture:
+The application is architected to ensure environment parity and data persistence:
+  - Orchestration: Docker Compose manages four distinct services (Frontend, API, DB, Admin UI).
+  - Persistence: Utilizes Docker Volumes to ensure MongoDB data survives container restarts.
+  - Signaling: The Node.js backend acts as a signaling server to coordinate WebRTC handshakes via WebSockets.
+
+# Installation & Setup:
   - Prerequisites:
-        - Node.js
-        - NPM
-        - Docker
+    - Node.js(v18+)
+    - Docker Desktop
 
-  - Local setup:
-    1. **Clone the Repository:**
-          ```bash
-          git clone https://github.com/Mitul82/FastTalk.git
-          ```
+  1. Clone the Repository:
+  ```bash
+  git clone https://github.com/Mitul82/FastTalk.git
+  cd FastTalk
+  ```
 
-    2. **Install Dependencies:**
-         ```bash
-         cd backend
-         npm install
-         cd frontend
-         npm install
-        ```
-         
-    3. **Create a Docker compose file in the root of the project directory:**
-        ```
-        
-        version: "3.8"
-        
-        services:
-          backend:
-            build:
-              context: ./backend
-              dockerfile: Dockerfile
-            ports:
-              - "3000:3000"
-            environment:
-              MONGO_URI: ${MONGO_URI}
-              JWT_SECRET: ${JWT_SECRET}
-              JWT_LIFETIME: ${JWT_LIFETIME}
-              CLOUDINARY_CLOUD_NAME: ${ CLOUDINARY_CLOUD_NAME}
-              CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-              CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-          PORT: ${POST_NUMBER}
-          FRONTEND_URL: ${FRONTEND_URL}
-        depends_on:
-          - mongodb
-        restart: unless-stopped
-        networks:
-          - fasttalk-network
-          
-        frontend:
-          build:
-            context: ./frontend
-            dockerfile: Dockerfile
-            args:
-              VITE_BACKEND_URL: ${VITE_BACKEND_URL}
-            ports:
-              - "80:80"
-            environment:
-              VITE_BACKEND_URL: ${VITE_BACKEND_URL}
-            depends_on:
-              - backend
-            restart: unless-stopped
-            networks:
-              - fasttalk-network
-              
-        mongodb:
-          image: mongo:8
-          ports:
-            - "27017:27017"
-          environment:
-            MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-            MONGO_INITDB_ROOT_PASSWORD: ${ MONGO_INITDB_ROOT_PASSWORD}
-          volumes:
-            - ${DIRECTORY_FOR_DATA_VOLUMES}
-          restart: unless-stopped
-          networks:
-            - fasttalk-network
-            
-        mongo-express:
-          image: mongo-express:latest
-          ports:
-            - "8081:8081"
-          environment:
-            ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_ADMINUSERNAME}
-            ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_ADMINPASSWORD}
-            ME_CONFIG_MONGODB_URL: ${_MONGODB_URL}
-          depends_on:
-            - mongodb
-          restart: unless-stopped
-          networks:
-            - fasttalk-network
-            
-        volumes:
-          mongodb_data:
-          
-        networks:
-          fasttalk-network:
+  2. Configure Environment Variables
+  Create a .env file in the root directory. You can use the provided template:
+  ```bash
+  cp .env.example .env
+  ```
+  3. Launch with Docker
+  This project is optimized to run with a single command. Docker will handle dependency installation and service linking:
+  ```bash
+  docker-compose up --build
+  ```
 
-        driver: bridge    
-    ```
+  - Frontend: http://localhost:80
+  - Backend API: http://localhost:3000
+  - Database GUI (Mongo-Express): http://localhost:8081
 
-  4. **Run the command in CMD:**
-     ```
-     docker-compose up --build
-     ```
-
-You can now visit the frontend on the address "http://localhost:80"
-
-# Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-Fork the Project
-
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-
-Push to the Branch (git push origin feature/AmazingFeature)
-
-Open a Pull Request
+# Contributing:
+Contributions make the open-source community an amazing place to learn and create.
+  - Fork the Project
+  - Create your Feature Branch (git checkout -b feature/AmazingFeature)
+  - Commit your Changes (git commit -m 'Add some AmazingFeature')
+  - Push to the Branch (git push origin feature/AmazingFeature)
+  - Open a Pull Request
 
 # Connect with me at:
   [Linkedin](https://www.linkedin.com/in/mitul82/)
-
