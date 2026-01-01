@@ -10,11 +10,11 @@ Fast-Talk is a high-performance, real-time communication platform engineered for
   - Database Management: Includes Mongo-Express as a built-in GUI for real-time data monitoring.
 
 # Tech Stack:
-  -Frontend: React, TailwindCSS, Vite
-  -Backend: Node.js, Express.js
-  -Real-Time: WebRTC (P2P Video/Audio), Socket.io (WebSockets)
-  -Database: MongoDB (Data), Cloudinary (Media)
-  -DevOps: Docker, Docker Compose, Nginx
+  - Frontend: React, TailwindCSS, Vite
+  - Backend: Node.js, Express.js
+  - Real-Time: WebRTC (P2P Video/Audio), Socket.io (WebSockets)
+  - Database: MongoDB (Data), Cloudinary (Media)
+  - DevOps: Docker, Docker Compose, Nginx
 
 # System Architecture:
 The application is architected to ensure environment parity and data persistence:
@@ -57,4 +57,5 @@ Contributions make the open-source community an amazing place to learn and creat
   - Open a Pull Request
 
 # Connect with me at:
+
   [Linkedin](https://www.linkedin.com/in/mitul82/)
