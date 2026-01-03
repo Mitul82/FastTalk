@@ -41,7 +41,7 @@ The application is architected to ensure environment parity and data persistence
   3. Launch with Docker
   This project is optimized to run with a single command. Docker will handle dependency installation and service linking:
   ```bash
-  docker-compose up --build
+  docker-compose --env-file ./.env up --build
   ```
 
   - Frontend: http://localhost:80
@@ -59,3 +59,4 @@ Contributions make the open-source community an amazing place to learn and creat
 # Connect with me at:
 
   [Linkedin](https://www.linkedin.com/in/mitul82/)
+
