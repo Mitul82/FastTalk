@@ -15,6 +15,7 @@
     "nodemon": "^3.1.11"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
@@ -25,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^7.0.0",
     "mongoose": "^8.19.4",
+    "redis": "^5.10.0",
     "socket.io": "^4.8.1"
   }
 }

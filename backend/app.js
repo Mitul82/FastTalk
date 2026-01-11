@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
 
 import helmet from 'helmet';
 import cors from 'cors';
@@ -11,6 +12,8 @@ import rateLimiter from 'express-rate-limit';
 import connectDB from './database/connectDB.js';
 import userRoutes from './routes/userRoutes.js';
 import msgRoutes from './routes/messagesRoutes.js';
+import socketAuth from './middleware/socketAuth.js';
+import { pubClient, subClient } from './database/redis.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -22,22 +25,29 @@ export const io = new Server(server, {
     }
 });
 
-export const userSocketMap = {};
+io.adapter(createAdapter(pubClient, subClient));
 
-io.on('connection', (socket) => {
-    const userId = socket.handshake.query.userId;
+io.use(socketAuth);
+
+io.on('connection', async (socket) => {
+    const userId = socket.userId;
+
+    if (!userId) {
+        socket.disconnect(true);
+        return;
+    }
 
     console.log('user connected', userId);
 
-    if(userId) {
-        userSocketMap[userId] = socket.id;
-    }
+    await pubClient.hSet("online_users", userId.toString(), socket.id);
 
-    io.emit('getOnlineUsers', Object.keys(userSocketMap));
+    const onlineUsers = await pubClient.hKeys("online_users");
 
-    socket.on('initiateVoiceCall', (data) => {
-        const { toUserId, fromUserId, callId, metadata } = data;
-        const recipientSocketId = userSocketMap[toUserId];
+    io.emit("getOnlineUsers", onlineUsers);
+
+    socket.on('initiateVoiceCall', async ({ toUserId, callId, metadata}) => {
+        const fromUserId = socket.userId;
+        const recipientSocketId = await pubClient.hGet("online_users", toUserId);
         if(recipientSocketId) {
             io.to(recipientSocketId).emit('incomingVoiceCall', {
                 fromUserId,
@@ -49,9 +59,9 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('initiateVideoCall', (data) => {
-        const { toUserId, fromUserId, callId, metadata } = data;
-        const recipientSocketId = userSocketMap[toUserId];
+    socket.on('initiateVideoCall', async ({ toUserId, callId, metadata}) => {
+        const fromUserId = socket.userId;
+        const recipientSocketId = await pubClient.hGet("online_users", toUserId);
         if(recipientSocketId) {
             io.to(recipientSocketId).emit('incomingVideoCall', {
                 fromUserId,
@@ -63,75 +73,76 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('acceptCall', (data) => {
-        const { toUserId, fromUserId, callId } = data;
-        const callerSocketId = userSocketMap[toUserId];
+    socket.on('acceptCall', async ({ toUserId, callId }) => {
+        const fromUserId = socket.userId;
+        const callerSocketId = await pubClient.hGet("online_users", toUserId);
         if(callerSocketId) {
             io.to(callerSocketId).emit('callAccepted', { fromUserId, callId, calleeSocketId: socket.id });
         }
     });
 
-    socket.on('rejectCall', (data) => {
-        const { toUserId, fromUserId, callId, reason } = data;
-        const callerSocketId = userSocketMap[toUserId];
+    socket.on('rejectCall', async ({ toUserId, callId, reason }) => {
+        const fromUserId = socket.userId;
+        const callerSocketId = await pubClient.hGet("online_users", toUserId);
         if(callerSocketId) {
             io.to(callerSocketId).emit('callRejected', { fromUserId, callId, reason });
         }
     });
 
-    socket.on('sendOffer', (data) => {
-        const { toUserId, fromUserId, callId, description } = data;
-        const targetSocketId = userSocketMap[toUserId];
+    socket.on('sendOffer', async ({ toUserId, callId, description }) => {
+        const fromUserId =  socket.userId;
+        const targetSocketId = await pubClient.hGet("online_users", toUserId);
         if(targetSocketId) {
             io.to(targetSocketId).emit('receiveOffer', { fromUserId, callId, description });
         }
     });
 
-    socket.on('sendAnswer', (data) => {
-        const { toUserId, fromUserId, callId, description } = data;
-        const targetSocketId = userSocketMap[toUserId];
+    socket.on('sendAnswer', async ({ toUserId, callId, description }) => {
+        const fromUserId =  socket.userId;
+        const targetSocketId = await pubClient.hGet("online_users", toUserId);
         if(targetSocketId) {
             io.to(targetSocketId).emit('receiveAnswer', { fromUserId, callId, description });
         }
     });
 
-    socket.on('sendIceCandidate', (data) => {
-        const { toUserId, fromUserId, callId, candidate } = data;
-        const targetSocketId = userSocketMap[toUserId];
+    socket.on('sendIceCandidate', async ({ toUserId, callId, candidate }) => {
+        const fromUserId =  socket.userId;
+        const targetSocketId = await pubClient.hGet("online_users", toUserId);
         if(targetSocketId) {
             io.to(targetSocketId).emit('receiveIceCandidate', { fromUserId, callId, candidate });
         }
     });
 
-    socket.on('initiateScreenShare', (data) => {
-        const { toUserId, fromUserId, callId } = data;
-        const recipientSocketId = userSocketMap[toUserId];
+    socket.on('initiateScreenShare', async ({ toUserId, callId }) => {
+        const fromUserId =  socket.userId;
+        const recipientSocketId = await pubClient.hGet("online_users", toUserId);
         if(recipientSocketId) {
             io.to(recipientSocketId).emit('incomingScreenShare', { fromUserId, callId });
         }
     });
 
-    socket.on('stopScreenShare', (data) => {
-        const { toUserId, fromUserId, callId } = data;
-        const recipientSocketId = userSocketMap[toUserId];
+    socket.on('stopScreenShare', async ({ toUserId, callId }) => {
+        const fromUserId =  socket.userId;
+        const recipientSocketId = await pubClient.hGet("online_users", toUserId);
         if(recipientSocketId) {
             io.to(recipientSocketId).emit('stopScreenShare', { fromUserId, callId });
         }
     });
 
-    socket.on('endCall', (data) => {
-        const { toUserId, fromUserId, callId } = data;
-        const recipientSocketId = userSocketMap[toUserId];
+    socket.on('endCall', async ({ toUserId, callId }) => {
+        const fromUserId =  socket.userId;
+        const recipientSocketId = await pubClient.hGet("online_users", toUserId);
         if(recipientSocketId) {
             io.to(recipientSocketId).emit('callEnded', { fromUserId, callId });
         }
     });
 
-    socket.on('disconnect', () => {
-        console.log('usr disconnected', userId);
-        delete userSocketMap[userId];
+    socket.on('disconnect', async () => {
+        console.log('user disconnected', userId);
+        await pubClient.hDel("online_users", userId.toString());
 
-        io.emit('getOnlineUsers', Object.keys(userSocketMap));
+        const updatedUsers = await pubClient.hKeys('online_users');
+        io.emit('getOnlineUsers', updatedUsers);
     });
 });
 
@@ -157,7 +168,7 @@ app.use(helmet({
             "default-src": ["'self'"],
             "script-src": ["'self'"],
             "style-src": ["'self'", "'unsafe-inline'"],
-            "connect-src": ["'self'", process.env.FRONTEND_URL],
+            "connect-src": ["'self'", process.env.FRONTEND_URL, "wss:"],
             "img-src": ["'self'", "data:", "https://res.cloudinary.com"],
             "object-src": ["'none'"],
             "base-uri": ["'self'"],

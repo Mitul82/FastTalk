@@ -1,7 +1,8 @@
 import cloudinary from '../database/cloudinary.js';
 import User from '../models/user.js';
 import Message from '../models/message.js';
-import { io, userSocketMap } from '../app.js';
+import { io } from '../app.js';
+import { pubClient } from '../database/redis.js';
 
 const getUsersForSideBar = async (req, res) => {
     try {
@@ -83,7 +84,7 @@ const sendMessage = async (req, res) => {
             image: imageUrl
         });
 
-        const receiverSocketId = userSocketMap[receiverId];
+        const receiverSocketId = await pubClient.hGet("online_users", receiverId);
 
         if(receiverSocketId) {
             io.to(receiverSocketId).emit('newMessage', newMessage);

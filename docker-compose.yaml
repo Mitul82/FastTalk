@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   backend:
+    container_name: fasttalk-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -9,6 +10,7 @@ services:
       - "3000:3000"
     environment:
       MONGO_URI: ${MONGO_URI}
+      REDIS_URI: ${REDIS_URI}
       JWT_SECRET: ${JWT_SECRET}
       JWT_LIFETIME: ${JWT_LIFETIME}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
@@ -18,11 +20,13 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       - mongodb
+      - redis
     restart: unless-stopped
     networks:
       - fasttalk-network
 
   frontend:
+    container_name: fasttalk-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -40,19 +44,26 @@ services:
 
   mongodb:
     image: mongo:8
+    container_name: fasttalk-mongodb
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
-      - ./fasttalk_data:/data/db
+      - mongodb_data:/data/db
     restart: unless-stopped
     networks:
       - fasttalk-network
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   mongo-express:
     image: mongo-express:latest
+    container_name: fasttalk-mongo-express
     ports:
       - "8081:8081"
     environment:
@@ -65,8 +76,26 @@ services:
     networks:
       - fasttalk-network
 
+  redis:
+    image: redis:7
+    container_name: fasttalk-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - '6379:6379'
+    networks:
+      - fasttalk-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
 volumes:
   mongodb_data:
+  redis_data:
 
 
 networks:

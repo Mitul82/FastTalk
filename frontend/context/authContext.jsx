@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
             if(data.success) {
                 setAuthUser(data.user);
                 
-                connectSocket(data.user);
+                connectSocket(data.token);
             }
         } catch (err) {
             console.error(err);
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
             if(data.success) {
                 setAuthUser(data.userData);
                 
-                connectSocket(data.userData);
+                connectSocket(data.token);
                 
                 axios.defaults.headers.common['token'] = data.token;
                 
@@ -74,6 +74,8 @@ export const AuthProvider = ({ children }) => {
             toast.success('Logged out successfully');
 
             socket.disconnect();
+
+            setSocket(null);
         } catch (err) {
             console.error(err);
         }
@@ -94,18 +96,17 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const connectSocket = (userData) => {
-        if(!userData || socket?.connected) {
+    const connectSocket = (jwtToken) => {
+        if(!jwtToken || socket?.connected) {
             return;
         }
 
         const newSocket = io(backendUrl, {
-            query: {
-                userId:  userData._id,
-            }
+            auth: {
+                token: jwtToken,
+            },
+            transports: ['websocket', 'polling'],
         });
-
-        newSocket.connect();
 
         setSocket(newSocket);
 
